@@ -1,1 +1,2451 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mia Lavana · Central Business Intelligence</title>
+  <meta name="description" content="About + Education Map + Calculators — JU-clean design system." />
+
+  <!-- ✅ Tailwind for tool UI only (disable preflight so it won't reset your site CSS) -->
+  <script>
+    window.tailwind = window.tailwind || {};
+    tailwind.config = { corePlugins: { preflight: false } };
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    :root{
+      --pageBg:#fff;
+      --pageText:#111;
+      --muted: rgba(17,17,17,.68);
+
+      --cardBg:#ffffff;
+      --cardStroke: rgba(17,17,17,.10);
+      --shadow: 0 22px 70px rgba(0,0,0,.10);
+      --shadowHover: 0 30px 95px rgba(0,0,0,.14);
+
+      --radius: 22px;
+      --tileRadius: 28px;
+
+      --easeOut: cubic-bezier(.2,.8,.2,1);
+      --easeApple: cubic-bezier(.22,.61,.36,1);
+
+      --dot: rgba(17,17,17,.28);
+      --dotOn: rgba(17,17,17,.85);
+
+      --green: #0FA958;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --blue: #3b82f6;
+
+      --ring: rgb(59 130 246 / 0.35);
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    html{ scroll-behavior:smooth; }
+
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color: var(--pageText);
+      background:
+        radial-gradient(1200px 700px at 75% 0%, rgba(0,122,255,.06), rgba(255,255,255,0) 55%),
+        radial-gradient(900px 520px at 10% 18%, rgba(124,92,255,.05), rgba(255,255,255,0) 55%),
+        var(--pageBg);
+      overflow-x:hidden;
+    }
+
+    a{ color:inherit; text-decoration:none; }
+    .wrap{ max-width: 1180px; margin: 0 auto; padding: 0 20px; }
+
+    /* ===== Full-bleed containers (map + hero rail) ===== */
+    .bleedHero, .bleed{
+      width: 100vw;
+      margin-left: 50%;
+      transform: translateX(-50%);
+      padding: 0;
+    }
+
+    /* ==============================
+       TOP BAR (JU style)
+       ============================== */
+    .topbar{
+      background: rgba(0,0,0,.86);
+      color: rgba(255,255,255,.92);
+      position: sticky;
+      top:0;
+      z-index: 80;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .topbar .wrap{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap: 18px;
+      height: 48px;
+    }
+    .tabs{
+      display:flex;
+      gap: 18px;
+      height: 100%;
+      align-items:flex-end;
+    }
+    .tab{
+      font-size: 14px;
+      letter-spacing:.2px;
+      padding: 12px 10px 10px;
+      border-bottom: 2px solid transparent;
+      color: rgba(255,255,255,.82);
+      transition: color .18s var(--easeOut), border-color .18s var(--easeOut);
+      white-space: nowrap;
+    }
+    .tab strong{ color:#fff; font-weight: 800; }
+    .tab.isActive{
+      color:#fff;
+      border-color: rgba(255,255,255,.92);
+    }
+
+    .tools{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      padding-bottom: 8px;
+    }
+    .toolBtn{
+      height: 34px;
+      padding: 0 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.10);
+      color: rgba(255,255,255,.92);
+      font-weight: 850;
+      font-size: 12.5px;
+      cursor:pointer;
+      transition: transform .18s var(--easeOut), opacity .18s var(--easeOut), background .18s var(--easeOut);
+      white-space: nowrap;
+      user-select:none;
+    }
+    .toolBtn:hover{ background: rgba(255,255,255,.14); }
+    .toolBtn:active{ transform: scale(.99); }
+    .toolBtn:disabled{ opacity:.45; cursor: default; }
+
+    /* ==============================
+       Sections
+       ============================== */
+    .section{ padding: 22px 0; }
+    .sectionTitleRow{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap: 16px;
+      margin-top: 10px;
+      margin-bottom: 14px;
+    }
+    .kicker{
+      color: rgba(17,17,17,.65);
+      font-size: 13px;
+      letter-spacing: .18px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    /* ==============================
+       HERO RAIL (JU)
+       ============================== */
+    .heroRail{ position: relative; margin-top: 10px; }
+    .railViewport{ overflow: hidden; border-radius: calc(var(--tileRadius) + 6px); }
+    .rail{
+      display:flex;
+      gap: 18px;
+      padding: 10px 16px 16px;
+      scroll-snap-type: x mandatory;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .rail::-webkit-scrollbar{ display:none; }
+
+    .railFade{
+      pointer-events:none;
+      position:absolute;
+      top:0;
+      bottom:0;
+      width: 64px;
+      z-index: 5;
+    }
+    .railFade.left{
+      left:0;
+      background: linear-gradient(90deg, rgba(255,255,255,1), rgba(255,255,255,0));
+    }
+    .railFade.right{
+      right:0;
+      background: linear-gradient(270deg, rgba(255,255,255,1), rgba(255,255,255,0));
+    }
+
+    .tile{
+      scroll-snap-align: start;
+      flex: 0 0 auto;
+      width: min(860px, calc(100vw - 64px));
+      border-radius: var(--tileRadius);
+      background: var(--cardBg);
+      border: 1px solid var(--cardStroke);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+      transform: translateZ(0);
+      transition: transform .22s var(--easeApple), box-shadow .22s var(--easeApple);
+      min-height: 340px;
+    }
+    .tile:hover{ transform: translateY(-2px); box-shadow: var(--shadowHover); }
+
+    .tileGrid{ display:grid; grid-template-columns: 1.05fr .95fr; min-height: 340px; }
+    .tileBody{
+      padding: 44px 44px 40px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      gap: 16px;
+    }
+
+    .tileEyebrow{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      font-weight: 900;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      font-size: 12px;
+      opacity: .95;
+    }
+
+    .tileTitle{
+      font-size: clamp(28px, 3.2vw, 44px);
+      letter-spacing: -.02em;
+      line-height: 1.05;
+      margin: 0;
+      font-weight: 900;
+    }
+    .tileDesc{
+      margin: 0;
+      color: rgba(255,255,255,.86);
+      font-size: 15px;
+      line-height: 1.45;
+      max-width: 52ch;
+    }
+
+    .tileCtaRow{
+      display:flex;
+      gap: 12px;
+      align-items:center;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+    .cta{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      height: 44px;
+      padding: 0 16px;
+      border-radius: 12px;
+      font-weight: 800;
+      background: rgba(255,255,255,.92);
+      color: #0b1b12;
+      border: 1px solid rgba(255,255,255,.18);
+      transition: transform .18s var(--easeOut), opacity .18s var(--easeOut);
+      user-select:none;
+      cursor:pointer;
+      white-space: nowrap;
+    }
+    .cta:active{ transform: scale(.99); }
+    .cta svg{ width: 18px; height: 18px; stroke: currentColor; stroke-width: 2.6; fill:none; }
+
+    .tileMedia{
+      position: relative;
+      min-height: 340px;
+      display:grid;
+      place-items:center;
+      overflow:hidden;
+    }
+
+    .t1{ background: radial-gradient(900px 500px at 60% 40%, rgba(124,92,255,.32), rgba(0,0,0,0) 60%),
+                   radial-gradient(680px 420px at 80% 10%, rgba(0,122,255,.30), rgba(0,0,0,0) 55%),
+                   #061f4a; }
+    .t2{ background: radial-gradient(900px 540px at 75% 55%, rgba(0,210,255,.22), rgba(0,0,0,0) 60%),
+                   radial-gradient(680px 420px at 35% 20%, rgba(255,255,255,.16), rgba(0,0,0,0) 55%),
+                   #0558d4; }
+    .t3{ background: radial-gradient(900px 540px at 75% 50%, rgba(255,0,128,.14), rgba(0,0,0,0) 58%),
+                   radial-gradient(720px 420px at 20% 30%, rgba(0,122,255,.12), rgba(0,0,0,0) 58%),
+                   #fff; color:#111; }
+    .t3 .tileDesc{ color: rgba(17,17,17,.70); }
+    .t3 .cta{
+      background: rgba(0,122,255,.92);
+      color: #fff;
+      border-color: rgba(0,122,255,.35);
+    }
+
+    /* ==============================
+       Dots
+       ============================== */
+    .railNav{
+      display:flex;
+      justify-content:flex-end;
+      align-items:center;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .dots{
+      display:flex;
+      gap: 8px;
+      align-items:center;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(17,17,17,.10);
+      background: rgba(255,255,255,.78);
+      box-shadow: 0 14px 34px rgba(0,0,0,.06);
+    }
+    .dotBtn{
+      width: 6px;
+      height: 6px;
+      border-radius: 99px;
+      background: var(--dot);
+      border: 0;
+      padding:0;
+      cursor:pointer;
+      transition: transform .18s var(--easeOut), background .18s var(--easeOut), opacity .18s var(--easeOut);
+    }
+    .dotBtn:hover{ transform: scale(1.2); }
+    .dotBtn.isActive{ background: var(--dotOn); transform: scale(1.25); }
+
+    /* ==============================
+       Mobile: keep tiles wide, show full text
+       ============================== */
+    @media (max-width: 860px){
+      .tools{ display:none; }
+      .tile{ min-height: unset; }
+      .tileGrid{ grid-template-columns: 1fr; min-height: unset; }
+      .tileMedia{ display:none; }
+      .tileBody{ padding: 30px 22px 24px; }
+      .tileDesc{ max-width: none; display:block; overflow: visible; }
+    }
+
+    /* ==============================
+       MAP (full bleed)
+       ============================== */
+    .map{
+      position: relative;
+      width: 100%;
+      aspect-ratio: 21 / 9;
+      background: #fff url("assets/banner-map.png") center / contain no-repeat;
+      border-top: 1px solid rgba(17,17,17,.08);
+      border-bottom: 1px solid rgba(17,17,17,.08);
+      transform: translateZ(0);
+      touch-action: manipulation;
+    }
+    @media (max-width: 860px){ .map{ aspect-ratio: 4 / 5; } }
+    @media (hover:hover){
+      .map{ will-change: transform; transition: transform .22s var(--easeApple); }
+    }
+
+    .pin{
+      position:absolute;
+      width: 14px;
+      height: 14px;
+      border-radius: 999px;
+      background: rgba(11,11,15,.92);
+      border: 2px solid rgba(255,255,255,.98);
+      cursor:pointer;
+      box-shadow: 0 10px 22px rgba(0,0,0,.18);
+      outline:none;
+      --scale: 1;
+      transform: translate(-50%, -50%) scale(var(--scale));
+      transition: transform .18s var(--easeApple), box-shadow .18s var(--easeApple);
+      z-index: 2;
+    }
+    .pin::before{ content:""; position:absolute; inset:-18px; border-radius:999px; }
+    .pin::after{
+      content:"";
+      position:absolute;
+      inset:-10px;
+      border-radius:999px;
+      border: 1px solid rgba(11,11,15,.18);
+      transform: scale(.55);
+      opacity:0;
+      animation: pulse 2.2s var(--easeApple) infinite;
+      pointer-events:none;
+    }
+    .pin[data-i="2"]::after{ animation-delay:.25s; }
+    .pin[data-i="3"]::after{ animation-delay:.5s; }
+    .pin[data-i="4"]::after{ animation-delay:.75s; }
+    .pin[data-i="5"]::after{ animation-delay:1s; }
+    @keyframes pulse{
+      0%{ transform: scale(.55); opacity:0; }
+      18%{ opacity:.85; }
+      55%{ opacity:.25; }
+      100%{ transform: scale(1.65); opacity:0; }
+    }
+    .pin.isNear{ --scale: 1.55; z-index: 10; box-shadow: 0 14px 34px rgba(0,0,0,.24); }
+    .pin.isClosest{ --scale: 1.95; z-index: 20; box-shadow: 0 18px 44px rgba(0,0,0,.28); }
+
+    .readout{
+      position:absolute;
+      right: 14px;
+      bottom: 12px;
+      font-size: 12px;
+      color: rgba(11,11,15,.62);
+      background: rgba(255,255,255,.82);
+      border: 1px solid rgba(11,11,15,.10);
+      padding: 6px 8px;
+      border-radius: 10px;
+      backdrop-filter: blur(10px);
+      pointer-events:none;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity .18s var(--easeApple), transform .18s var(--easeApple);
+    }
+    .readout.show{ opacity:1; transform: translateY(0); }
+
+    /* ==============================
+       Trust title + rail
+       ============================== */
+    .trustTitle{
+      margin: 0 0 14px;
+      font-size: 22px;
+      font-weight: 950;
+      letter-spacing: -.01em;
+      color: rgba(17,17,17,.92);
+    }
+    .trustRail{
+      display:flex;
+      gap: 14px;
+      align-items:center;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width:none;
+      padding: 6px 2px 2px;
+    }
+    .trustRail::-webkit-scrollbar{ display:none; }
+
+    .trustPill{
+      flex: 0 0 auto;
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      height: 52px;
+      padding: 0 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(17,17,17,.10);
+      background: rgba(255,255,255,.86);
+      box-shadow: 0 18px 55px rgba(0,0,0,.06);
+      user-select:none;
+      white-space: nowrap;
+    }
+    .trustPill img{
+      height: 22px;
+      width: auto;
+      display:block;
+      opacity: .95;
+      filter: saturate(.96);
+    }
+
+    /* ==============================
+       HOT NEW RELEASES (JU)
+       ============================== */
+    .hotWrap{
+      border-radius: 34px;
+      background: linear-gradient(90deg, #1d66ff, #36b6ff, #43d7b4);
+      padding: 18px;
+      box-shadow: 0 26px 90px rgba(0,0,0,.12);
+    }
+    .hotTitle{
+      color: rgba(255,255,255,.95);
+      font-weight: 950;
+      letter-spacing: -.01em;
+      margin: 0 0 12px;
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      font-size: 18px;
+    }
+    .hotTitle svg{ width: 18px; height: 18px; stroke:#fff; stroke-width:2.6; fill:none; }
+
+    .hotRail{
+      display:flex;
+      gap: 18px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 4px;
+      scroll-snap-type: x mandatory;
+      scrollbar-width:none;
+    }
+    .hotRail::-webkit-scrollbar{ display:none; }
+
+    .hotCard{
+      position: relative;
+      scroll-snap-align: start;
+      flex: 0 0 auto;
+      width: min(320px, calc(100vw - 96px));
+      border-radius: 22px;
+      background: rgba(255,255,255,.96);
+      border: 1px solid rgba(0,0,0,.10);
+      box-shadow: 0 18px 55px rgba(0,0,0,.12);
+      overflow:hidden;
+      transition: transform .22s var(--easeApple), box-shadow .22s var(--easeApple);
+      cursor: pointer;
+      user-select:none;
+      outline:none;
+    }
+    .hotCard:hover{ transform: translateY(-2px); box-shadow: 0 26px 85px rgba(0,0,0,.16); }
+    .hotCard:active{ transform: translateY(-1px); }
+    .hotCard:focus-visible{ box-shadow: 0 26px 85px rgba(0,0,0,.16), 0 0 0 4px rgba(255,255,255,.55); }
+
+    .hotImg{
+      height: 170px;
+      background:
+        radial-gradient(700px 260px at 30% 15%, rgba(0,122,255,.18), rgba(255,255,255,0) 60%),
+        radial-gradient(540px 240px at 70% 70%, rgba(67,215,180,.20), rgba(255,255,255,0) 62%),
+        linear-gradient(135deg, rgba(0,0,0,.08), rgba(0,0,0,.02));
+    }
+    .hotBody{ padding: 14px 14px 16px; }
+
+    /* ✅ Color indicators for every tool card */
+    .catDot{
+      width: 10px; height: 10px;
+      border-radius: 999px;
+      background: var(--blue);
+      box-shadow: 0 8px 18px rgba(0,0,0,.10);
+      flex: 0 0 auto;
+    }
+    .catDot.isSales{ background: var(--blue); }
+    .catDot.isOps{ background: var(--amber); }
+    .catDot.isMarketing{ background: var(--green); }
+
+    .hotBrand{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      color: rgba(17,17,17,.68);
+      font-weight: 800;
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+    .hotBrand .miniLogo{
+      width: 22px; height: 22px;
+      border-radius: 6px;
+      border: 1px solid rgba(0,0,0,.10);
+      background: rgba(255,255,255,.8);
+      display:grid; place-items:center;
+      font-weight: 950;
+      font-size: 12px;
+      color: rgba(17,17,17,.62);
+    }
+    .hotName{
+      margin: 0 0 10px;
+      font-weight: 950;
+      letter-spacing: -.01em;
+      line-height: 1.15;
+      font-size: 18px;
+    }
+    .hotMeta{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      color: rgba(17,17,17,.60);
+      font-weight: 700;
+      font-size: 13px;
+      margin-top: 6px;
+    }
+
+    /* ✅ Top Pick badge */
+    .topPickBadge{
+      position:absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 5;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.96);
+      background: rgba(239,68,68,.94);
+      border: 1px solid rgba(255,255,255,.45);
+      box-shadow: 0 12px 30px rgba(239,68,68,.22);
+      backdrop-filter: blur(10px);
+      pointer-events:none;
+    }
+
+    /* ✅ keeps anchor targets from hiding under sticky topbar */
+    #education-map, #hot-new-releases, #credentials { scroll-margin-top: 70px; }
+
+    /* ==============================
+       ✅ CREDENTIALS — LEAVE AS-IS (per your instruction)
+       ============================== */
+    #credentials{ overflow: visible; }
+    #credentials .credRailShell{ overflow: visible; position: relative; }
+    #credentials .credViewport{ overflow: visible; border-radius: 0; }
+
+    #credentials .credRail{
+      display:flex;
+      gap: 18px;
+      padding: 12px 14px 18px;
+      overflow-x:auto;
+      -webkit-overflow-scrolling: touch;
+      scroll-snap-type: x mandatory;
+      scrollbar-width:none;
+      scroll-padding-left: 14px;
+      scroll-padding-right: 14px;
+    }
+    #credentials .credRail::-webkit-scrollbar{ display:none; }
+
+    #credentials .credCard{
+      scroll-snap-align: start;
+      flex: 0 0 auto;
+      width: min(520px, calc(100vw - 84px));
+      border-radius: var(--tileRadius);
+      background: rgba(255,255,255,.94);
+      border: 1px solid rgba(17,17,17,.10);
+      box-shadow: 0 18px 55px rgba(0,0,0,.12);
+      overflow:hidden;
+      min-height: 520px;
+      display:flex;
+      flex-direction:column;
+    }
+
+    @media (min-width: 861px){
+      #credentials .credRail{
+        padding-left: 32px;
+        padding-right: 32px;
+        scroll-padding-left: 32px;
+        scroll-padding-right: 32px;
+      }
+      #credentials .credCard{
+        width: min(520px, calc(100vw - 220px));
+      }
+    }
+
+    #credentials .credCardTop{ padding: 18px 18px 10px; }
+    #credentials .credCardTop h3{
+      margin:0;
+      font-size: 20px;
+      font-weight: 950;
+      letter-spacing: -.01em;
+      color: rgba(17,17,17,.92);
+    }
+
+    #credentials .credList{
+      padding: 10px 12px 16px;
+      display:flex;
+      flex-direction:column;
+      gap: 12px;
+      flex: 1;
+    }
+
+    #credentials .credGroup{
+      border-radius: 22px;
+      border: 1px solid rgba(17,17,17,.08);
+      background: rgba(255,255,255,.88);
+      box-shadow: 0 14px 34px rgba(0,0,0,.04);
+      overflow:hidden;
+    }
+    #credentials .credGroupHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      padding: 12px 14px 10px;
+      border-bottom: 1px solid rgba(17,17,17,.06);
+      background: linear-gradient(180deg, rgba(11,11,15,.02), rgba(11,11,15,0));
+    }
+    #credentials .credGroupHead strong{
+      font-size: 12px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: rgba(11,11,15,.65);
+      font-weight: 950;
+    }
+    #credentials .credGroupHead span{
+      font-size: 12px;
+      color: rgba(11,11,15,.45);
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    #credentials .credGroupBody{
+      padding: 10px 10px 12px;
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+    }
+
+    #credentials .credRow{
+      display:grid;
+      grid-template-columns: 44px 1fr;
+      gap: 12px;
+      align-items:start;
+      padding: 12px 12px;
+      border-radius: 18px;
+      border: 1px solid rgba(17,17,17,.08);
+      background: rgba(255,255,255,.92);
+      box-shadow: 0 10px 22px rgba(0,0,0,.03);
+    }
+    #credentials .credLogo{
+      width: 44px; height: 44px;
+      border-radius: 14px;
+      border: 1px solid rgba(17,17,17,.10);
+      background: #fff;
+      display:grid;
+      place-items:center;
+      overflow:hidden;
+    }
+    #credentials .credLogo img{
+      width: 30px;
+      height: 30px;
+      object-fit: contain;
+      display:block;
+    }
+
+    #credentials .credMain{ min-width: 0; }
+    #credentials .credTitle{
+      font-weight: 900;
+      font-size: 14.5px;
+      letter-spacing: -.01em;
+      line-height: 1.25;
+      color: rgba(17,17,17,.92);
+      margin: 0 0 6px;
+    }
+    #credentials .credMeta{
+      font-size: 12.5px;
+      color: rgba(17,17,17,.62);
+      font-weight: 800;
+      display:flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items:center;
+      line-height: 1.25;
+    }
+    #credentials .credMeta .dot{ opacity:.55; }
+
+    /* ==============================
+       MAP MODAL
+       ============================== */
+    .modalBack{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.42);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 18px;
+      z-index: 120;
+    }
+    .modalBack.isOpen{ display:flex; }
+
+    .modal{
+      width: min(900px, 100%);
+      border-radius: 30px;
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(255,255,255,.20);
+      box-shadow: 0 40px 140px rgba(0,0,0,.34);
+      overflow:hidden;
+      transform: translateY(10px);
+      opacity: 0;
+      transition: transform .22s var(--easeApple), opacity .22s var(--easeApple);
+      backdrop-filter: blur(18px);
+    }
+    .modalBack.isOpen .modal{ transform: translateY(0); opacity: 1; }
+    .modalTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      padding: 16px 16px 12px;
+      border-bottom: 1px solid rgba(11,11,15,.10);
+    }
+    .modalTop strong{
+      font-size: 13px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: rgba(11,11,15,.55);
+    }
+    .close{
+      border: 0;
+      background: rgba(11,11,15,.06);
+      border-radius: 999px;
+      width: 42px;
+      height: 42px;
+      display:grid;
+      place-items:center;
+      cursor:pointer;
+      transition: transform .18s var(--easeApple), background .18s var(--easeApple);
+    }
+    .close:hover{ background: rgba(11,11,15,.08); }
+    .close:active{ transform: scale(.98); }
+    .modalBody{
+      padding: 32px 32px 36px;
+      display:flex;
+      flex-direction: column;
+      align-items:center;
+      gap: 22px;
+    }
+    .logoHero{
+      width: 100%;
+      height: 300px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: linear-gradient(180deg, rgba(11,11,15,.04), rgba(11,11,15,.01));
+      border-radius: 26px;
+      border: 1px solid rgba(11,11,15,.08);
+    }
+    .logoHero img{
+      max-width: 620px;
+      max-height: 210px;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      opacity: 0;
+      transform: scale(.96);
+      transition: opacity .35s ease, transform .35s ease;
+    }
+    .modalBack.isOpen .logoHero img{ opacity:1; transform: scale(1); }
+    .meta{
+      text-align:center;
+      margin-top: 2px;
+    }
+    .meta h2{
+      margin:0;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+    }
+    .meta p{
+      margin: 8px 0 0;
+      color: rgba(11,11,15,.58);
+      font-size: 14px;
+      line-height: 1.45;
+      max-width: 72ch;
+    }
+
+    /* ==============================
+       TOAST (copied)
+       ============================== */
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      background: rgba(11,11,15,.86);
+      color: #fff;
+      font-size: 13px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      opacity: 0;
+      transition: opacity .18s ease;
+      pointer-events:none;
+      z-index: 140;
+    }
+    .toast.show{ opacity: 1; }
+
+    .footer{
+      padding: 18px 0 44px;
+      color: rgba(17,17,17,.55);
+      font-size: 13px;
+    }
+
+    /* ===============================
+       Jet fly-by (assets/jet.png)
+       =============================== */
+    .planeFly{
+      position: fixed;
+      left: -320px;
+      top: 18%;
+      z-index: 99999;
+      pointer-events: none;
+      transform: translateZ(0);
+    }
+    .planeFly img{
+      width: 160px;
+      height: auto;
+      display:block;
+      filter:none;
+      opacity: 1;
+      user-select:none;
+      -webkit-user-drag:none;
+      transform: rotate(-6deg);
+    }
+    @keyframes flyAcross{
+      0%   { transform: translateX(0) translateY(0); opacity: 0; }
+      10%  { opacity: 1; }
+      55%  { transform: translateX(calc(55vw + 140px)) translateY(-12px); }
+      100% { transform: translateX(calc(100vw + 520px)) translateY(4px); opacity: 0; }
+    }
+    .planeFly.isFlying{ animation: flyAcross 4.8s cubic-bezier(.2,.8,.2,1) forwards; }
+
+    /* ===============================
+       Popup: Coded by Mia Lavana
+       =============================== */
+    .popup {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      width: 260px;
+      background: rgba(255,255,255,0.92);
+      border-radius: 16px;
+      border: 1px solid rgba(0,0,0,0.08);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.15);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      padding: 14px;
+      z-index: 99998;
+
+      opacity: 0;
+      transform: translateY(12px);
+      pointer-events: none;
+      transition: opacity .35s ease, transform .35s ease;
+    }
+    .popup.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .popupHeader {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .popupText { font-size: 14px; font-weight: 650; color: rgba(17,17,17,.90); }
+    .popupPercent { font-size: 13px; color: rgba(0,0,0,0.6); font-weight: 800; }
+    .barWrap {
+      height: 8px;
+      width: 100%;
+      background: rgba(0,0,0,0.08);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .bar { height: 100%; width: 0%; background: var(--green); border-radius: 999px; }
+
+    /* ==============================
+       ✅ TOOL MODAL (Hot New Releases only)
+       ============================== */
+    .toolModalBack{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.42);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 18px;
+      z-index: 10010;
+    }
+    .toolModalBack.isOpen{ display:flex; }
+
+    .toolModal{
+      width: min(1100px, 100%);
+      border-radius: 34px;
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(255,255,255,.22);
+      box-shadow: 0 40px 140px rgba(0,0,0,.34);
+      overflow:hidden;
+      backdrop-filter: blur(18px);
+      transform: translateY(10px);
+      opacity: 0;
+      transition: transform .22s var(--easeApple), opacity .22s var(--easeApple);
+
+      height: min(92vh, 860px);
+      display:flex;
+      flex-direction: column;
+    }
+    .toolModalBack.isOpen .toolModal{ transform: translateY(0); opacity: 1; }
+
+    .toolModalTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      padding: 14px 14px 12px;
+      border-bottom: 1px solid rgba(11,11,15,.10);
+      flex: 0 0 auto;
+    }
+
+    .toolTopText{
+      min-width: 0;
+      display:flex;
+      flex-direction:column;
+      gap: 4px;
+    }
+    .toolTopKicker{
+      font-size: 12px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: rgba(11,11,15,.55);
+      font-weight: 900;
+      line-height: 1.1;
+    }
+    .toolTopTitle{
+      font-size: 15px;
+      font-weight: 950;
+      letter-spacing: -.01em;
+      color: rgba(11,11,15,.88);
+      line-height: 1.15;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 70vw;
+    }
+
+    .toolClose{
+      border: 0;
+      background: rgba(11,11,15,.06);
+      border-radius: 999px;
+      width: 42px;
+      height: 42px;
+      display:grid;
+      place-items:center;
+      cursor:pointer;
+      font-size: 22px;
+      transition: transform .18s var(--easeApple), background .18s var(--easeApple);
+      flex: 0 0 auto;
+    }
+    .toolClose:hover{ background: rgba(11,11,15,.08); }
+    .toolClose:active{ transform: scale(.98); }
+
+    .toolModalBody{
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow: hidden;
+      padding: 14px;
+      display:flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .toolCaptionInline{
+      color: rgba(11,11,15,.60);
+      font-size: 13px;
+      line-height: 1.35;
+      font-weight: 750;
+    }
+
+    .toolStage{
+      width: 100%;
+      border-radius: 26px;
+      border: 1px solid rgba(11,11,15,.10);
+      background: rgba(255,255,255,.94);
+      box-shadow: 0 18px 55px rgba(0,0,0,.08);
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow: auto;
+      overflow-x: hidden;              /* ✅ prevents side cut / horizontal scroll */
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+      padding: 18px;
+    }
+
+    /* ✅ hard clamp for long numbers (fixes CPA cut-off) */
+    .numWrap{
+      min-width: 0;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    /* ✅ Tool stage safety: never let long text force width */
+    .toolStage *{ max-width: 100%; }
+    .toolStage pre{
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    /* ✅ MOBILE: full-screen tools modal */
+    @media (max-width: 560px){
+      .toolModalBack{
+        padding: 0;
+        align-items: stretch;
+      }
+      .toolModal{
+        width: 100%;
+        height: 100dvh;
+        border-radius: 0;
+      }
+      .toolModalTop{
+        padding: 12px 12px 10px;
+      }
+      .toolTopTitle{
+        max-width: calc(100vw - 88px);
+      }
+      .toolModalBody{
+        padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
+      }
+      .toolStage{
+        border-radius: 18px;
+        padding: 12px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      *{ animation:none !important; transition:none !important; scroll-behavior:auto !important; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="topbar">
+    <div class="wrap">
+      <nav class="tabs" aria-label="Page">
+        <a class="tab isActive" href="#"><span><strong>About</strong></span></a>
+      </nav>
+      <div class="tools" aria-label="Pin tools">
+        <button class="toolBtn" id="pickerBtn" type="button">Pin Picker: Off</button>
+        <button class="toolBtn" id="modeBtn" type="button" disabled>Mode: Mobile</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <section class="section" aria-label="About tiles">
+      <div class="sectionTitleRow">
+        <div class="kicker">Central Business Intelligence</div>
+        <div class="railNav" aria-label="Carousel dots">
+          <div class="dots" id="dots"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- HERO RAIL full-bleed -->
+  <section class="bleedHero" aria-label="Hero card rail (full bleed)">
+    <div class="heroRail">
+      <div class="railFade left"></div>
+      <div class="railFade right"></div>
+
+      <div class="railViewport">
+        <div class="rail" id="rail">
+
+          <article class="tile t1" aria-label="How I Work">
+            <div class="tileGrid">
+              <div class="tileBody" style="color: rgba(255,255,255,.92);">
+                <div class="tileEyebrow">ABOUT</div>
+                <h3 class="tileTitle">How I Work</h3>
+                <p class="tileDesc">
+                  I’m deeply passionate about technology, the arts, and humanitarian work because all three shape how people live, express themselves, and move through the world. My work in software has given me a front-row seat to decision-making at scale, and I’ve learned how to translate technical choices into outcomes that people actually feel.
+                </p>
+              </div>
+              <div class="tileMedia"></div>
+            </div>
+          </article>
+
+          <article class="tile t2" aria-label="Trained Worldwide">
+            <div class="tileGrid">
+              <div class="tileBody" style="color: rgba(255,255,255,.92);">
+                <div class="tileEyebrow">EXPERIENCE</div>
+                <h3 class="tileTitle">Trained<br>Worldwide</h3>
+                <p class="tileDesc">
+                  Built to work globally. Educated across the U.S., Europe, and Asia.
+                </p>
+                <div class="tileCtaRow">
+                  <a class="cta" href="#education-map" id="tripBtn">
+                    Let’s Take a Trip
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h12"></path><path d="M13 6l6 6-6 6"></path></svg>
+                  </a>
+                </div>
+              </div>
+              <div class="tileMedia"></div>
+            </div>
+          </article>
+
+          <article class="tile t3" aria-label="Work">
+            <div class="tileGrid">
+              <div class="tileBody">
+                <div class="tileEyebrow">WORK</div>
+                <h3 class="tileTitle">Start Exploring My Portfolio</h3>
+                <p class="tileDesc">
+                  From analytics and software to design-forward systems, my work focuses on clarity, scalability, and intention. Every project reflects an obsession with structure, usability, and outcomes that hold up in the real world.
+                </p>
+                <div class="tileCtaRow">
+                  <a class="cta" href="#hot-new-releases">
+                    Hot New Releases
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h12"></path><path d="M13 6l6 6-6 6"></path></svg>
+                  </a>
+                </div>
+              </div>
+              <div class="tileMedia"></div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Education map (full bleed) -->
+  <section class="bleed" id="education-map" aria-label="Education map section">
+    <div class="map" id="map" aria-label="World map with location pins">
+      <button class="pin" data-i="1" data-label="California" data-logo="assets/logos/UCR.png"
+        data-caption="UCR School of Business • A. Gary Anderson Graduate School of Management"
+        data-d-left="36.4" data-d-top="30.4" data-m-left="31.8" data-m-top="41.0"></button>
+
+      <button class="pin" data-i="2" data-label="Milan" data-logo="assets/logos/Bocconi.png"
+        data-caption="SDA Bocconi School of Management"
+        data-d-left="49.6" data-d-top="28.1" data-m-left="49.3" data-m-top="39.8"></button>
+
+      <button class="pin" data-i="3" data-label="Durham" data-logo="assets/logos/Duke.png"
+        data-caption="Duke University"
+        data-d-left="40.1" data-d-top="29.5" data-m-left="37.1" data-m-top="40.8"></button>
+
+      <button class="pin" data-i="4" data-label="Cambridge" data-logo="assets/logos/HBR.png"
+        data-caption="Harvard Business Review"
+        data-d-left="40.9" data-d-top="27.9" data-m-left="39.1" data-m-top="39.8"></button>
+
+      <button class="pin" data-i="5" data-label="Hong Kong" data-logo="assets/logos/Hong-Kong.png"
+        data-caption="The Hong Kong University of Science and Technology"
+        data-d-left="59.8" data-d-top="32.8" data-m-left="63.4" data-m-top="41.6"></button>
+
+      <button class="pin" data-i="2" data-label="New York City" data-logo="assets/logos/NYU.png"
+        data-caption="NYU Tandon School of Engineering"
+        data-d-left="40.7" data-d-top="28.1" data-m-left="38.1" data-m-top="40.2"></button>
+
+      <button class="pin" data-i="3" data-label="New Haven" data-logo="assets/logos/Yale.png"
+        data-caption="Yale University"
+        data-d-left="41.3" data-d-top="28.1" data-m-left="37.6" data-m-top="40.2"></button>
+
+      <div class="readout" id="readout" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  <main class="wrap">
+    <section class="section" aria-label="Trust strip">
+      <h2 class="trustTitle">Educated across leading universities and companies</h2>
+      <div class="trustRail" aria-label="Logos">
+        <div class="trustPill"><img alt="Google" src="https://commons.wikimedia.org/wiki/Special:FilePath/Google%202015%20logo.svg"></div>
+        <div class="trustPill"><img alt="IBM" src="https://commons.wikimedia.org/wiki/Special:FilePath/IBM%20logo.svg"></div>
+        <div class="trustPill"><img alt="Microsoft" src="https://commons.wikimedia.org/wiki/Special:FilePath/Microsoft%20logo%20(2012).svg"></div>
+        <div class="trustPill"><img alt="Stanford University" src="https://commons.wikimedia.org/wiki/Special:FilePath/Stanford%20wordmark%20(2012).svg"></div>
+        <div class="trustPill"><img alt="Harvard Business Review" src="https://commons.wikimedia.org/wiki/Special:FilePath/Harvard%20Business%20Review%20wordmark.svg"></div>
+        <div class="trustPill"><img alt="Yale University" src="https://commons.wikimedia.org/wiki/Special:FilePath/Yale%20University%20logo.svg"></div>
+        <div class="trustPill"><img alt="Johns Hopkins University" src="https://commons.wikimedia.org/wiki/Special:FilePath/Johns%20Hopkins%20University%20logo.png"></div>
+        <div class="trustPill"><img alt="Duke University" src="https://commons.wikimedia.org/wiki/Special:FilePath/Duke%20University%20logo.svg"></div>
+        <div class="trustPill"><img alt="NYU" src="https://commons.wikimedia.org/wiki/Special:FilePath/Nyu%20short%20color.svg"></div>
+        <div class="trustPill"><img alt="Yonsei University" src="https://commons.wikimedia.org/wiki/Special:FilePath/Yonsei%20University%20Logo.png"></div>
+      </div>
+    </section>
+
+    <!-- ✅ Hot New Releases (opens tools modal) -->
+    <section class="section" id="hot-new-releases" aria-label="Hot new releases">
+      <div class="hotWrap">
+        <h2 class="hotTitle">
+          <span>Hot New Releases</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h12"></path><path d="M13 6l6 6-6 6"></path></svg>
+        </h2>
+
+        <div class="hotRail" aria-label="Hot New Releases tools">
+          <article class="hotCard" tabindex="0" role="button"
+            data-tool="forecast"
+            data-title="Retail Sales Forecast Calculator"
+            data-caption="Forecast today’s totals using your current velocity.">
+            <span class="topPickBadge" aria-hidden="true">Top Pick</span>
+            <div class="hotImg"></div>
+            <div class="hotBody">
+              <div class="hotBrand"><span class="catDot isSales"></span><span class="miniLogo">★</span> Sales</div>
+              <h3 class="hotName">Retail Sales Forecast</h3>
+              <div class="hotMeta"><span>FREE</span><span>★ 4.9</span></div>
+            </div>
+          </article>
+
+          <article class="hotCard" tabindex="0" role="button"
+            data-tool="roi"
+            data-title="ROI Calculator"
+            data-caption="ROI = (G − C) ÷ C × 100.">
+            <div class="hotImg"></div>
+            <div class="hotBody">
+              <div class="hotBrand"><span class="catDot isSales"></span><span class="miniLogo">★</span> Sales</div>
+              <h3 class="hotName">ROI Calculator</h3>
+              <div class="hotMeta"><span>FREE</span><span>★ 4.8</span></div>
+            </div>
+          </article>
+
+          <article class="hotCard" tabindex="0" role="button"
+            data-tool="pert"
+            data-title="Time Estimation: Three-Point (PERT)"
+            data-caption="Expected time + a 90% range.">
+            <div class="hotImg"></div>
+            <div class="hotBody">
+              <div class="hotBrand"><span class="catDot isOps"></span><span class="miniLogo">★</span> Operations</div>
+              <h3 class="hotName">PERT Time Estimator</h3>
+              <div class="hotMeta"><span>FREE</span><span>★ 4.7</span></div>
+            </div>
+          </article>
+
+          <article class="hotCard" tabindex="0" role="button"
+            data-tool="mde"
+            data-title="Marketing Decision Engine"
+            data-caption="Scale, Fix, Reallocate, or Pause.">
+            <span class="topPickBadge" aria-hidden="true">Top Pick</span>
+            <div class="hotImg"></div>
+            <div class="hotBody">
+              <div class="hotBrand"><span class="catDot isMarketing"></span><span class="miniLogo">★</span> Marketing</div>
+              <h3 class="hotName">Marketing Decision Engine</h3>
+              <div class="hotMeta"><span>FREE</span><span>★ 4.9</span></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ✅ Credentials (unchanged) -->
+    <section class="section" id="credentials" aria-label="Credentials">
+      <div class="sectionTitleRow">
+        <h2 class="trustTitle" style="margin:0;">Credentials</h2>
+        <div class="railNav" aria-label="Credentials carousel dots">
+          <div class="dots" id="credDots"></div>
+        </div>
+      </div>
+
+      <div class="credRailShell">
+        <div class="credViewport">
+          <div class="credRail" id="credRail">
+
+            <!-- TECH -->
+            <article class="credCard" aria-label="Tech">
+              <div class="credCardTop"><h3>Tech</h3></div>
+
+              <div class="credList">
+                <!-- Cyber Security -->
+                <div class="credGroup">
+                  <div class="credGroupHead">
+                    <strong>Cyber Security</strong>
+                    <span>Specializations</span>
+                  </div>
+                  <div class="credGroupBody">
+                    <div class="credRow"><div class="credLogo"><img alt="JHU" src="https://commons.wikimedia.org/wiki/Special:FilePath/Johns%20Hopkins%20University%20logo.png"></div><div class="credMain"><div class="credTitle">AI for Cybersecurity Specialization</div><div class="credMeta"><span>Johns Hopkins University</span><span class="dot">•</span><span>Credential # ________</span></div></div></div>
+                    <div class="credRow"><div class="credLogo"><img alt="NYU" src="https://commons.wikimedia.org/wiki/Special:FilePath/Nyu%20short%20color.svg"></div><div class="credMain"><div class="credTitle">Enterprise and Infrastructure Security</div><div class="credMeta"><span>New York University</span><span class="dot">•</span><span>Credential # ________</span></div></div></div>
+                    <div class="credRow"><div class="credLogo"><img alt="NYU" src="https://commons.wikimedia.org/wiki/Special:FilePath/Nyu%20short%20color.svg"></div><div class="credMain"><div class="credTitle">Cyber Attack Countermeasures</div><div class="credMeta"><span>New York University</span><span class="dot">•</span><span>Credential # ________</span></div></div></div>
+                    <div class="credRow"><div class="credLogo"><img alt="JHU" src="https://commons.wikimedia.org/wiki/Special:FilePath/Johns%20Hopkins%20University%20logo.png"></div><div class="credMain"><div class="credTitle">Securing AI and Advanced Topics</div><div class="credMeta"><span>Johns Hopkins University</span><span class="dot">•</span><span>Credential # ________</span></div></div></div>
+                    <div class="credRow"><div class="credLogo"><img alt="JHU" src="https://commons.wikimedia.org/wiki/Special:FilePath/Johns%20Hopkins%20University%20logo.png"></div><div class="credMain"><div class="credTitle">Advanced Malware and Network Anomaly Detection</div><div class="credMeta"><span>Johns Hopkins University</span><span class="dot">•</span><span>Credential # ________</span></div></div></div>
+                    <div class="credRow"><div class="credLogo"><img alt="JHU" src="https://commons.wikimedia.org/wiki/Special:FilePath/Johns%20Hopkins%20University%20logo.png"></div><div class="credMain"><div class="credTitle">Introduction to AI for Cybersecurity</div><div class="credMeta"><span>Johns Hopkins University</span><span class="dot">•</span><span>Credential # ________</span></div></div></div>
+                  </div>
+                </div>
+
+                <!-- Hacking -->
+                <div class="credGroup">
+                  <div class="credGroupHead">
+                    <strong>Hacking</strong>
+                    <span>Hands-on</span>
+                  </div>
+                  <div class="credGroupBody">
+                    <div class="credRow"><div class="credLogo"><img alt="IBM" src="https://commons.wikimedia.org/wiki/Special:FilePath/IBM%20logo.svg"></div><div class="credMain"><div class="credTitle">Ethical Hacking with Kali Linux</div><div class="credMeta"><span>IBM</span><span class="dot">•</span><span>Credential # ________</span></div></div></div>
+                  </div>
+                </div>
+
+                <!-- AI / Agents -->
+                <div class="credGroup">
+                  <div class="credGroupHead">
+                    <strong>AI / Agents</strong>
+                    <span>Workflows</span>
+                  </div>
+                  <div class="credGroupBody">
+                    <div class="credRow"><div class="credLogo"><img alt="IBM" src="https://commons.wikimedia.org/wiki/Special:FilePath/IBM%20logo.svg"></div><div class="credMain"><div class="credTitle">Building AI Agents and Agentic Workflows Specialization</div><div class="credMeta"><span>IBM</span><span class="dot">•</span><span>Credential # ________</span></div></div></div>
+                  </div>
+                </div>
+
+                <!-- Data Engineering placeholder -->
+                <div class="credGroup">
+                  <div class="credGroupHead">
+                    <strong>Data Engineering</strong>
+                    <span>Add next</span>
+                  </div>
+                  <div class="credGroupBody">
+                    <div class="credRow">
+                      <div class="credLogo"></div>
+                      <div class="credMain">
+                        <div class="credTitle">Add your Data Engineering credential here</div>
+                        <div class="credMeta"><span>—</span><span class="dot">•</span><span>Credential # ________</span></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </article>
+
+            <!-- MARKETING -->
+            <article class="credCard" aria-label="Marketing">
+              <div class="credCardTop"><h3>Marketing</h3></div>
+              <div class="credList">
+                <div class="credRow"><div class="credLogo"><img alt="Yonsei" src="https://commons.wikimedia.org/wiki/Special:FilePath/Yonsei%20University%20Logo.png"></div><div class="credMain"><div class="credTitle">International Marketing &amp; Cross Industry Growth Specialization</div><div class="credMeta"><span>Yonsei University</span><span class="dot">•</span><span>Credential # ________</span></div></div></div>
+                <div class="credRow"><div class="credLogo"><img alt="Yonsei" src="https://commons.wikimedia.org/wiki/Special:FilePath/Yonsei%20University%20Logo.png"></div><div class="credMain"><div class="credTitle">International Marketing &amp; Cross Industry Growth Capstone Project</div><div class="credMeta"><span>Yonsei University</span><span class="dot">•</span><span>Credential # ________</span></div></div></div>
+                <div class="credRow"><div class="credLogo"><img alt="Yonsei" src="https://commons.wikimedia.org/wiki/Special:FilePath/Yonsei%20University%20Logo.png"></div><div class="credMain"><div class="credTitle">International Entertainment and Sports Marketing</div><div class="credMeta"><span>Yonsei University</span><span class="dot">•</span><span>Credential # ________</span></div></div></div>
+                <div class="credRow"><div class="credLogo"><img alt="Yonsei" src="https://commons.wikimedia.org/wiki/Special:FilePath/Yonsei%20University%20Logo.png"></div><div class="credMain"><div class="credTitle">International Hospitality &amp; Healthcare Services Marketing</div><div class="credMeta"><span>Yonsei University</span><span class="dot">•</span><span>Credential # ________</span></div></div></div>
+              </div>
+            </article>
+
+            <!-- OPERATIONS -->
+            <article class="credCard" aria-label="Operations">
+              <div class="credCardTop"><h3>Operations</h3></div>
+              <div class="credList">
+                <div class="credRow"><div class="credLogo"><img alt="Google" src="https://commons.wikimedia.org/wiki/Special:FilePath/Google%202015%20logo.svg"></div><div class="credMain"><div class="credTitle">Google Project Management Specialization</div><div class="credMeta"><span>Google</span><span class="dot">•</span><span>Credential # ________</span></div></div></div>
+              </div>
+            </article>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="portfolio" aria-label="Portfolio placeholder">
+      <div class="kicker">Portfolio</div>
+      <p style="margin:10px 0 0; color: rgba(17,17,17,.65); font-weight:700;">
+        Portfolio section next.
+      </p>
+    </section>
+
+    <div class="footer">Built clean. Built to scale.</div>
+  </main>
+
+  <!-- MAP Modal -->
+  <div class="modalBack" id="modalBack" role="dialog" aria-modal="true" aria-label="Location details">
+    <div class="modal">
+      <div class="modalTop">
+        <strong>Details</strong>
+        <button class="close" id="closeBtn" aria-label="Close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(11,11,15,.75)" stroke-width="2.8" stroke-linecap="round">
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="modalBody">
+        <div class="logoHero">
+          <img id="modalLogo" src="" alt="">
+        </div>
+        <div class="meta">
+          <h2 id="modalTitle"></h2>
+          <p id="modalCaption"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Copied</div>
+
+  <!-- Popup markup -->
+  <div class="popup" id="popup" aria-live="polite" aria-atomic="true">
+    <div class="popupHeader">
+      <div class="popupText">Coded by Mia Lavana</div>
+      <div class="popupPercent" id="popupPercent">0%</div>
+    </div>
+    <div class="barWrap"><div class="bar" id="bar"></div></div>
+  </div>
+
+  <!-- TOOL MODAL (Hot New Releases tools) -->
+  <div class="toolModalBack" id="toolModalBack" role="dialog" aria-modal="true" aria-label="Tool details">
+    <div class="toolModal">
+      <div class="toolModalTop">
+        <div class="toolTopText">
+          <div class="toolTopKicker">Tool</div>
+          <div class="toolTopTitle" id="toolTopTitle">Details</div>
+        </div>
+        <button class="toolClose" id="toolCloseBtn" aria-label="Close">×</button>
+      </div>
+
+      <div class="toolModalBody">
+        <div class="toolCaptionInline" id="toolCaptionInline"></div>
+        <div class="toolStage" id="toolStage"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===============================
+       TOOL TEMPLATES
+       =============================== -->
+
+  <template id="tpl-forecast">
+    <article class="rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden">
+      <div class="p-6 md:p-8">
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+          <div>
+            <h3 class="font-semibold text-lg">Retail Sales Forecast Calculator</h3>
+            <p class="mt-2 text-sm text-slate-600">Project today's totals using your current velocity.</p>
+          </div>
+          <span class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold border border-slate-200 bg-slate-50 text-slate-700">
+            <span class="h-2.5 w-2.5 rounded-full bg-blue-500"></span> Ready
+          </span>
+        </div>
+
+        <!-- ✅ Mobile-perfect: don’t force 6 columns until large -->
+        <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+          <label class="block"><span class="text-sm font-medium">Open time</span><input id="sf_open" type="time" value="08:00" class="mt-2 w-full min-h-[46px] rounded-xl border border-slate-300 px-3 bg-white"/></label>
+          <label class="block"><span class="text-sm font-medium">Current time</span><input id="sf_now" type="time" class="mt-2 w-full min-h-[46px] rounded-xl border border-slate-300 px-3 bg-white"/></label>
+          <label class="block"><span class="text-sm font-medium">Close time</span><input id="sf_close" type="time" value="23:59" class="mt-2 w-full min-h-[46px] rounded-xl border border-slate-300 px-3 bg-white"/></label>
+          <label class="block"><span class="text-sm font-medium">Current sales ($)</span><input id="sf_sales" type="number" inputmode="decimal" placeholder="e.g. 306446.64" class="mt-2 w-full min-h-[46px] rounded-xl border border-slate-300 px-3 bg-white"/></label>
+          <label class="block"><span class="text-sm font-medium">Current transactions</span><input id="sf_tx" type="number" inputmode="numeric" placeholder="e.g. 5459" class="mt-2 w-full min-h-[46px] rounded-xl border border-slate-300 px-3 bg-white"/></label>
+          <label class="block">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-medium">Daily target ($)</span>
+              <span class="text-xs text-slate-500">(optional)</span>
+            </div>
+            <input id="sf_target" type="number" inputmode="decimal" placeholder="e.g. 40000" class="mt-2 w-full min-h-[46px] rounded-xl border border-slate-300 px-3 bg-white"/>
+          </label>
+        </div>
+
+        <div class="mt-5 flex flex-wrap items-center gap-3">
+          <button type="button" id="sf_calc_btn" class="rounded-2xl bg-blue-600 px-5 py-2.5 text-white font-semibold shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-[var(--ring)]">Forecast day</button>
+          <button type="button" id="sf_now_btn" class="rounded-2xl border border-slate-300 px-5 py-2.5 font-semibold hover:border-slate-400">Use current local time</button>
+        </div>
+
+        <div class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="rounded-2xl border border-slate-200 p-4"><div class="text-xs uppercase tracking-wider text-slate-500">Elapsed hours</div><div id="sf_elapsed" class="mt-1 text-2xl font-extrabold tabular-nums">0.00</div></div>
+          <div class="rounded-2xl border border-slate-200 p-4"><div class="text-xs uppercase tracking-wider text-slate-500">Remaining hours</div><div id="sf_remaining" class="mt-1 text-2xl font-extrabold tabular-nums">0.00</div></div>
+          <div class="rounded-2xl border border-slate-200 p-4"><div class="text-xs uppercase tracking-wider text-slate-500">Avg ticket</div><div id="sf_avg_ticket" class="mt-1 text-2xl font-extrabold tabular-nums">$0.00</div></div>
+          <div class="rounded-2xl border border-slate-200 p-4"><div class="text-xs uppercase tracking-wider text-slate-500">Tx per hour</div><div id="sf_tph" class="mt-1 text-2xl font-extrabold tabular-nums">0.00</div></div>
+        </div>
+
+        <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="rounded-2xl border border-slate-200 p-4"><div class="text-xs uppercase tracking-wider text-slate-500">Projected transactions</div><div id="sf_proj_tx" class="mt-1 text-2xl font-extrabold tabular-nums">0</div></div>
+          <div class="rounded-2xl border border-slate-200 p-4"><div class="text-xs uppercase tracking-wider text-slate-500">Projected sales</div><div id="sf_proj_sales" class="mt-1 text-2xl font-extrabold tabular-nums">$0.00</div></div>
+          <div class="rounded-2xl border border-slate-200 p-4">
+            <div class="text-xs uppercase tracking-wider text-slate-500">Guidance</div>
+            <div class="mt-2 text-sm font-semibold text-slate-700" id="sf_note">Enter values to evaluate</div>
+          </div>
+        </div>
+
+        <details class="mt-6 group">
+          <summary class="cursor-pointer text-sm text-slate-600 group-open:text-slate-800 font-medium">Show calculation steps</summary>
+          <pre id="sf_steps" class="mt-3 bg-slate-50 rounded-xl p-4 text-[13px] border border-slate-200"></pre>
+        </details>
+      </div>
+    </article>
+  </template>
+
+  <template id="tpl-roi">
+    <article class="rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden">
+      <div class="p-6 md:p-8">
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+          <div>
+            <h3 class="font-semibold text-lg">ROI Calculator</h3>
+            <p class="mt-2 text-sm text-slate-600">ROI = (G − C) ÷ C × 100</p>
+          </div>
+          <span class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold border border-slate-200 bg-slate-50 text-slate-700">
+            <span class="h-2.5 w-2.5 rounded-full bg-blue-500"></span> Ready
+          </span>
+        </div>
+
+        <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <label class="block"><span class="text-sm font-medium">Expected Gain (G)</span><input id="roi_gain" type="number" inputmode="decimal" placeholder="e.g. 10000" class="mt-2 w-full min-h-[46px] rounded-xl border border-slate-300 px-3 bg-white"/></label>
+          <label class="block"><span class="text-sm font-medium">Upfront Cost</span><input id="roi_upfront" type="number" inputmode="decimal" placeholder="e.g. 6000" class="mt-2 w-full min-h-[46px] rounded-xl border border-slate-300 px-3 bg-white"/></label>
+          <label class="block"><span class="text-sm font-medium">Monthly Cost</span><input id="roi_monthly" type="number" inputmode="decimal" placeholder="e.g. 25" class="mt-2 w-full min-h-[46px] rounded-xl border border-slate-300 px-3 bg-white"/></label>
+          <label class="block"><span class="text-sm font-medium">Months</span><input id="roi_months" type="number" inputmode="numeric" placeholder="e.g. 12" class="mt-2 w-full min-h-[46px] rounded-xl border border-slate-300 px-3 bg-white"/></label>
+        </div>
+
+        <div class="mt-5">
+          <button type="button" id="roi_calc_btn" class="rounded-2xl bg-blue-600 px-5 py-2.5 text-white font-semibold shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-[var(--ring)]">Calculate ROI</button>
+        </div>
+
+        <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="rounded-2xl border border-slate-200 p-4"><div class="text-xs uppercase tracking-wider text-slate-500">Total Cost (C)</div><div id="roi_total_cost" class="mt-1 text-2xl font-extrabold tabular-nums">$0.00</div></div>
+          <div class="rounded-2xl border border-slate-200 p-4"><div class="text-xs uppercase tracking-wider text-slate-500">ROI</div><div id="roi_percent" class="mt-1 text-2xl font-extrabold tabular-nums">0.00%</div></div>
+          <div class="rounded-2xl border border-slate-200 p-4"><div class="text-xs uppercase tracking-wider text-slate-500">Net Gain</div><div id="roi_net" class="mt-1 text-2xl font-extrabold tabular-nums">$0.00</div></div>
+        </div>
+
+        <details class="mt-6 group">
+          <summary class="cursor-pointer text-sm text-slate-600 group-open:text-slate-800 font-medium">Show calculation steps</summary>
+          <pre id="roi_steps" class="mt-3 bg-slate-50 rounded-xl p-4 text-[13px] border border-slate-200"></pre>
+        </details>
+      </div>
+    </article>
+  </template>
+
+  <template id="tpl-pert">
+    <article class="rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden">
+      <div class="p-6 md:p-8">
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+          <div>
+            <h3 class="font-semibold text-lg">Time Estimation: Three-Point (PERT)</h3>
+            <p class="mt-2 text-sm text-slate-600">Expected time + a 90% range.</p>
+          </div>
+          <span class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold border border-slate-200 bg-slate-50 text-slate-700">
+            <span class="h-2.5 w-2.5 rounded-full bg-amber-500"></span> Ready
+          </span>
+        </div>
+
+        <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <label class="block"><span class="text-sm font-medium">Optimistic (O)</span><input id="tpe_o" type="number" inputmode="decimal" placeholder="e.g. 3" class="mt-2 w-full min-h-[46px] rounded-xl border border-slate-300 px-3 bg-white"></label>
+          <label class="block"><span class="text-sm font-medium">Most likely (M)</span><input id="tpe_m" type="number" inputmode="decimal" placeholder="e.g. 5" class="mt-2 w-full min-h-[46px] rounded-xl border border-slate-300 px-3 bg-white"></label>
+          <label class="block"><span class="text-sm font-medium">Pessimistic (P)</span><input id="tpe_p" type="number" inputmode="decimal" placeholder="e.g. 10" class="mt-2 w-full min-h-[46px] rounded-xl border border-slate-300 px-3 bg-white"></label>
+          <label class="block"><span class="text-sm font-medium">Units</span><select id="tpe_unit" class="mt-2 w-full min-h-[46px] rounded-xl border border-slate-300 px-3 bg-white"><option value="days">Days</option><option value="hours" selected>Hours</option></select></label>
+          <label class="block"><span class="text-sm font-medium">Method</span><select id="tpe_method" class="mt-2 w-full min-h-[46px] rounded-xl border border-slate-300 px-3 bg-white"><option value="pert" selected>PERT (weighted)</option><option value="triangular">Triangular</option></select></label>
+        </div>
+
+        <div class="mt-5">
+          <button type="button" id="tpe_calc_btn" class="rounded-2xl bg-blue-600 px-5 py-2.5 text-white font-semibold shadow-md hover:shadow-lg">Estimate time</button>
+        </div>
+
+        <div class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="rounded-2xl border border-slate-200 p-4"><div class="text-xs uppercase tracking-wider text-slate-500">Expected (E)</div><div id="tpe_e" class="mt-1 text-2xl font-extrabold tabular-nums">0.00</div></div>
+          <div class="rounded-2xl border border-slate-200 p-4"><div class="text-xs uppercase tracking-wider text-slate-500">Std. deviation</div><div id="tpe_sd" class="mt-1 text-2xl font-extrabold tabular-nums">0.00</div></div>
+          <div class="rounded-2xl border border-slate-200 p-4"><div class="text-xs uppercase tracking-wider text-slate-500">90% range</div><div id="tpe_ci" class="mt-1 text-2xl font-extrabold tabular-nums">0.00–0.00</div></div>
+          <div class="rounded-2xl border border-slate-200 p-4"><div class="text-xs uppercase tracking-wider text-slate-500">Signal</div><div id="tpe_signal" class="mt-2 text-sm font-semibold text-slate-700">Enter values to evaluate</div></div>
+        </div>
+
+        <details class="mt-6 group">
+          <summary class="cursor-pointer text-sm text-slate-600 group-open:text-slate-800 font-medium">Show calculation steps</summary>
+          <pre id="tpe_steps" class="mt-3 bg-slate-50 rounded-xl p-4 text-[13px] border border-slate-200"></pre>
+        </details>
+      </div>
+    </article>
+  </template>
+
+  <template id="tpl-mde">
+    <article class="rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden">
+      <div class="p-6 md:p-8">
+        <div class="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <h3 class="font-semibold text-lg">Marketing Decision Engine</h3>
+            <p class="mt-2 text-sm text-slate-600">One input set. Three perspectives.</p>
+          </div>
+          <div class="w-full sm:w-auto">
+            <label class="block">
+              <span class="text-sm font-medium">Tone</span>
+              <select id="mde_tone" class="mt-2 w-full min-h-[46px] rounded-xl border border-slate-300 px-3 bg-white">
+                <option value="operator" selected>Operator</option>
+                <option value="cfo">CFO</option>
+                <option value="founder">Founder</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <label class="block"><span class="text-sm font-medium">Marketing spend (weekly)</span><input id="mde_spend" type="number" inputmode="decimal" placeholder="e.g. 2500" class="mt-2 w-full min-h-[46px] rounded-xl border border-slate-300 px-3 bg-white"></label>
+          <label class="block"><span class="text-sm font-medium">Revenue (weekly)</span><input id="mde_revenue" type="number" inputmode="decimal" placeholder="e.g. 42000" class="mt-2 w-full min-h-[46px] rounded-xl border border-slate-300 px-3 bg-white"></label>
+          <label class="block"><span class="text-sm font-medium">New customers (weekly)</span><input id="mde_new_customers" type="number" inputmode="numeric" placeholder="e.g. 120" class="mt-2 w-full min-h-[46px] rounded-xl border border-slate-300 px-3 bg-white"></label>
+          <label class="block"><span class="text-sm font-medium">Gross margin (%)</span><input id="mde_margin" type="number" inputmode="decimal" placeholder="e.g. 55" class="mt-2 w-full min-h-[46px] rounded-xl border border-slate-300 px-3 bg-white"></label>
+          <label class="block"><span class="text-sm font-medium">Avg order value (AOV)</span><input id="mde_aov" type="number" inputmode="decimal" placeholder="e.g. 58" class="mt-2 w-full min-h-[46px] rounded-xl border border-slate-300 px-3 bg-white"></label>
+          <label class="block"><span class="text-sm font-medium">Website visits (optional)</span><input id="mde_visits" type="number" inputmode="numeric" placeholder="e.g. 18000" class="mt-2 w-full min-h-[46px] rounded-xl border border-slate-300 px-3 bg-white"></label>
+
+          <label class="block sm:col-span-2 lg:col-span-3">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-medium">Marketing influence (attribution slider)</span>
+              <span class="text-sm font-semibold text-slate-700"><span id="mde_attr_label">40%</span></span>
+            </div>
+            <input id="mde_attr" type="range" min="10" max="80" value="40" step="5" class="w-full">
+            <div class="mt-1 flex items-center justify-between text-xs text-slate-500">
+              <span>Conservative</span><span>Likely</span><span>Aggressive</span>
+            </div>
+          </label>
+        </div>
+
+        <div class="mt-6 flex flex-wrap items-center gap-3">
+          <button type="button" id="mde_calc_btn" class="rounded-2xl bg-blue-600 px-5 py-2.5 text-white font-semibold shadow-md hover:shadow-lg">Run decision engine</button>
+          <button type="button" id="mde_seed_btn" class="rounded-2xl border border-slate-300 px-5 py-2.5 font-semibold hover:border-slate-400">Load example</button>
+        </div>
+
+        <div class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="rounded-2xl border border-slate-200 p-4">
+            <div class="text-xs uppercase tracking-wider text-slate-500">Influenced revenue</div>
+            <div id="mde_inf_rev" class="mt-1 text-2xl font-extrabold tabular-nums numWrap">$0.00</div>
+            <div id="mde_inf_rev_rng" class="mt-1 text-xs text-slate-500">Range: —</div>
+          </div>
+
+          <div class="rounded-2xl border border-slate-200 p-4">
+            <div class="text-xs uppercase tracking-wider text-slate-500">Influenced gross profit</div>
+            <div id="mde_inf_gp" class="mt-1 text-2xl font-extrabold tabular-nums numWrap">$0.00</div>
+            <div class="mt-1 text-xs text-slate-500">GP = revenue × margin</div>
+          </div>
+
+          <div class="rounded-2xl border border-slate-200 p-4">
+            <div class="text-xs uppercase tracking-wider text-slate-500">Net impact (GP − spend)</div>
+            <div id="mde_net" class="mt-1 text-2xl font-extrabold tabular-nums numWrap">$0.00</div>
+            <div id="mde_roi" class="mt-1 text-xs text-slate-500">ROI: —</div>
+          </div>
+
+          <!-- ✅ FIXED: wrap-safe row so it never clips -->
+          <div class="rounded-2xl border border-slate-200 p-4">
+            <div class="text-xs uppercase tracking-wider text-slate-500">CPA vs max CPA</div>
+            <div class="mt-1 flex flex-wrap items-baseline gap-2 min-w-0">
+              <div id="mde_cpa" class="text-2xl font-extrabold tabular-nums numWrap">$0.00</div>
+              <div class="text-slate-400">/</div>
+              <div id="mde_cpa_max" class="text-lg font-extrabold tabular-nums text-slate-700 numWrap">$0.00</div>
+            </div>
+            <div class="mt-1 text-xs text-slate-500">Max CPA = AOV × margin × influence</div>
+          </div>
+        </div>
+
+        <div class="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div class="rounded-2xl border border-slate-200 p-5 lg:col-span-2">
+            <div class="text-xs uppercase tracking-wider text-slate-500">Decision</div>
+            <div id="mde_decision" class="mt-2 text-2xl font-extrabold">Enter values to evaluate</div>
+            <div id="mde_reason" class="mt-2 text-sm text-slate-700"></div>
+          </div>
+
+          <div class="rounded-2xl border border-slate-200 p-5">
+            <div class="text-xs uppercase tracking-wider text-slate-500">Bottleneck</div>
+            <div id="mde_bottleneck" class="mt-2 text-lg font-extrabold">—</div>
+            <div id="mde_action" class="mt-2 text-sm text-slate-700">—</div>
+          </div>
+        </div>
+
+        <details class="mt-6 group">
+          <summary class="cursor-pointer text-sm text-slate-600 group-open:text-slate-800 font-medium">Show calculation steps</summary>
+          <pre id="mde_steps" class="mt-3 bg-slate-50 rounded-xl p-4 text-[13px] border border-slate-200"></pre>
+        </details>
+      </div>
+    </article>
+  </template>
+
+  <script>
+    // =========================================================
+    // Reusable rail init (dots + drag)
+    // =========================================================
+    function initSnapRail({ railEl, dotsEl, itemSelector }){
+      if(!railEl || !dotsEl) return;
+
+      function items(){ return Array.from(railEl.querySelectorAll(itemSelector)); }
+      function step(){
+        const first = railEl.querySelector(itemSelector);
+        if(!first) return 600;
+        const styles = getComputedStyle(railEl);
+        const gap = parseFloat(styles.columnGap || styles.gap || 18);
+        return first.getBoundingClientRect().width + gap;
+      }
+      function buildDots(){
+        dotsEl.innerHTML = "";
+        items().forEach((_, i)=>{
+          const b = document.createElement('button');
+          b.className = 'dotBtn' + (i === 0 ? ' isActive' : '');
+          b.type = 'button';
+          b.setAttribute('aria-label', 'Go to slide ' + (i+1));
+          b.addEventListener('click', ()=> railEl.scrollTo({ left: i * step(), behavior:'smooth' }));
+          dotsEl.appendChild(b);
+        });
+      }
+      function setActive(){
+        const s = step();
+        const idx = Math.round(railEl.scrollLeft / s);
+        const btns = dotsEl.querySelectorAll('.dotBtn');
+        btns.forEach((b,i)=> b.classList.toggle('isActive', i === Math.max(0, Math.min(idx, btns.length-1))));
+      }
+
+      let isDown=false, startX=0, scrollStart=0;
+
+      railEl.addEventListener('pointerdown', (e)=>{
+        if (e.target.closest('a, button, input, textarea, select, label')) return;
+        isDown = true;
+        railEl.setPointerCapture(e.pointerId);
+        startX = e.clientX;
+        scrollStart = railEl.scrollLeft;
+        railEl.style.scrollBehavior = 'auto';
+      });
+
+      railEl.addEventListener('pointermove', (e)=>{
+        if(!isDown) return;
+        const dx = (e.clientX - startX);
+        railEl.scrollLeft = scrollStart - dx;
+        setActive();
+      });
+
+      function endDrag(){
+        if(!isDown) return;
+        isDown = false;
+        railEl.style.scrollBehavior = '';
+        setActive();
+      }
+
+      railEl.addEventListener('pointerup', endDrag);
+      railEl.addEventListener('pointercancel', endDrag);
+      railEl.addEventListener('mouseleave', endDrag);
+      railEl.addEventListener('scroll', ()=> setActive(), { passive:true });
+
+      window.addEventListener('resize', ()=>{ buildDots(); setActive(); });
+
+      buildDots();
+      setActive();
+    }
+
+    initSnapRail({ railEl: document.getElementById('rail'), dotsEl: document.getElementById('dots'), itemSelector: '.tile' });
+    initSnapRail({ railEl: document.getElementById('credRail'), dotsEl: document.getElementById('credDots'), itemSelector: '.credCard' });
+
+    // =========================================================
+    // Trip button → jet fly-by
+    // =========================================================
+    (function(){
+      const tripBtn = document.getElementById('tripBtn');
+      if(!tripBtn) return;
+      const JET_IMG_URL = "assets/jet.png";
+
+      function launchJet(){
+        const jet = document.createElement('div');
+        jet.className = 'planeFly';
+        const top = 10 + Math.random() * 35;
+        jet.style.top = top + '%';
+
+        const img = document.createElement('img');
+        img.src = JET_IMG_URL;
+        img.alt = '';
+        img.decoding = 'async';
+        img.loading = 'eager';
+
+        jet.appendChild(img);
+        document.body.appendChild(jet);
+
+        requestAnimationFrame(() => jet.classList.add('isFlying'));
+        jet.addEventListener('animationend', () => jet.remove(), { once:true });
+      }
+
+      tripBtn.addEventListener('click', () => { launchJet(); });
+    })();
+
+    // =========================================================
+    // MAP pins + modal + picker
+    // =========================================================
+    const map = document.getElementById('map');
+    const pins = Array.from(document.querySelectorAll('.pin'));
+    const readout = document.getElementById('readout');
+    const toast = document.getElementById('toast');
+
+    const modalBack = document.getElementById('modalBack');
+    const modalLogo = document.getElementById('modalLogo');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalCaption = document.getElementById('modalCaption');
+    const closeBtn = document.getElementById('closeBtn');
+
+    const pickerBtn = document.getElementById('pickerBtn');
+    const modeBtn = document.getElementById('modeBtn');
+
+    const mqMobile = matchMedia('(max-width: 860px)');
+    let picking = false;
+    let pickerMode = 'mobile';
+
+    function showToast(text){
+      toast.textContent = text;
+      toast.classList.add('show');
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(()=> toast.classList.remove('show'), 900);
+    }
+
+    function applyPinPositions(){
+      const useMobile = mqMobile.matches;
+      pins.forEach(p=>{
+        const dL = p.dataset.dLeft, dT = p.dataset.dTop;
+        const mL = p.dataset.mLeft, mT = p.dataset.mTop;
+        const left = useMobile ? (mL || dL) : dL;
+        const top  = useMobile ? (mT || dT) : dT;
+        p.style.left = `${left}%`;
+        p.style.top  = `${top}%`;
+      });
+    }
+    applyPinPositions();
+    mqMobile.addEventListener?.('change', applyPinPositions);
+    window.addEventListener('resize', applyPinPositions);
+
+    function openFromPin(pin){
+      modalTitle.textContent = pin.dataset.label || 'Location';
+      modalCaption.textContent = pin.dataset.caption || '';
+      modalLogo.src = pin.dataset.logo || '';
+      modalLogo.alt = pin.dataset.label || 'Logo';
+      modalBack.classList.add('isOpen');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeMapModal(){
+      modalBack.classList.remove('isOpen');
+      document.body.style.overflow = '';
+      modalLogo.src = '';
+    }
+    closeBtn.addEventListener('click', closeMapModal);
+    modalBack.addEventListener('click', (e)=>{ if (e.target === modalBack) closeMapModal(); });
+    window.addEventListener('keydown', (e)=>{ if (e.key === 'Escape') closeMapModal(); });
+
+    pins.forEach(pin=>{
+      pin.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        if (picking) return;
+        openFromPin(pin);
+      });
+    });
+
+    function updatePickerUI(){
+      pickerBtn.textContent = `Pin Picker: ${picking ? 'On' : 'Off'}`;
+      modeBtn.disabled = !picking;
+      modeBtn.textContent = `Mode: ${pickerMode === 'mobile' ? 'Mobile' : 'Desktop'}`;
+      if (!picking) readout.classList.remove('show');
+    }
+    updatePickerUI();
+
+    pickerBtn.addEventListener('click', ()=>{
+      picking = !picking;
+      showToast(picking ? 'Pin Picker On' : 'Pin Picker Off');
+      updatePickerUI();
+    });
+
+    modeBtn.addEventListener('click', ()=>{
+      pickerMode = (pickerMode === 'mobile') ? 'desktop' : 'mobile';
+      showToast(`Mode: ${pickerMode}`);
+      updatePickerUI();
+    });
+
+    function percentsFromEvent(e){
+      const r = map.getBoundingClientRect();
+      const x = ((e.clientX - r.left) / r.width * 100);
+      const y = ((e.clientY - r.top) / r.height * 100);
+      return { x, y };
+    }
+
+    map.addEventListener('mousemove', (e)=>{
+      if (!picking) return;
+      const { x, y } = percentsFromEvent(e);
+      readout.textContent = `${x.toFixed(1)}% , ${y.toFixed(1)}%`;
+      readout.classList.add('show');
+    });
+
+    map.addEventListener('mouseleave', ()=>{
+      if (!picking) return;
+      readout.classList.remove('show');
+    });
+
+    map.addEventListener('click', async (e)=>{
+      if (!picking) return;
+      const { x, y } = percentsFromEvent(e);
+      const left = x.toFixed(1);
+      const top  = y.toFixed(1);
+      const snippet = (pickerMode === 'mobile')
+        ? `data-m-left="${left}" data-m-top="${top}"`
+        : `data-d-left="${left}" data-d-top="${top}"`;
+
+      try{
+        await navigator.clipboard.writeText(snippet);
+        showToast(`Copied: ${snippet}`);
+      }catch{
+        showToast(`Use: ${snippet}`);
+      }
+    });
+
+    // =========================================================
+    // Popup: "Coded by Mia Lavana"
+    // =========================================================
+    (function () {
+      const popup = document.getElementById('popup');
+      const bar = document.getElementById('bar');
+      const percentEl = document.getElementById('popupPercent');
+
+      const loadDuration = 2000;
+      const holdDuration = 2500;
+      let startTime = null;
+
+      function showPopup() {
+        popup.classList.add('show');
+
+        function animate(timestamp) {
+          if (!startTime) startTime = timestamp;
+          const elapsed = timestamp - startTime;
+          const progress = Math.min(elapsed / loadDuration, 1);
+          const percent = Math.round(progress * 100);
+
+          bar.style.width = percent + '%';
+          percentEl.textContent = percent + '%';
+
+          if (progress < 1) {
+            requestAnimationFrame(animate);
+          } else {
+            bar.style.width = '100%';
+            percentEl.textContent = '100%';
+            setTimeout(() => popup.classList.remove('show'), holdDuration);
+          }
+        }
+
+        requestAnimationFrame(animate);
+      }
+
+      window.addEventListener('load', () => { setTimeout(showPopup, 500); });
+    })();
+
+    // =========================================================
+    // ✅ TOOL MODAL OPEN/CLOSE + TOOLS LOGIC
+    // =========================================================
+    const toolModalBack = document.getElementById('toolModalBack');
+    const toolCloseBtn  = document.getElementById('toolCloseBtn');
+    const toolStageEl   = document.getElementById('toolStage');
+    const toolTopTitle  = document.getElementById('toolTopTitle');
+    const toolCaptionInline = document.getElementById('toolCaptionInline');
+
+    function openToolModal(){
+      toolModalBack.classList.add('isOpen');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeToolModal(){
+      toolModalBack.classList.remove('isOpen');
+      document.body.style.overflow = '';
+      toolStageEl.innerHTML = '';
+      toolTopTitle.textContent = 'Details';
+      toolCaptionInline.textContent = '';
+    }
+    toolCloseBtn.addEventListener('click', closeToolModal);
+    toolModalBack.addEventListener('click', (e)=>{ if(e.target === toolModalBack) closeToolModal(); });
+    window.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeToolModal(); });
+
+    function clicky(el, fn){
+      el.addEventListener('click', fn);
+      el.addEventListener('keydown', (e)=>{
+        if(e.key === 'Enter' || e.key === ' '){
+          e.preventDefault();
+          fn();
+        }
+      });
+    }
+
+    function injectTemplate(id){
+      const tpl = document.getElementById(id);
+      if(!tpl) return;
+      toolStageEl.innerHTML = '';
+      toolStageEl.appendChild(tpl.content.cloneNode(true));
+      toolStageEl.scrollTop = 0;
+    }
+
+    function money(n){
+      if(!Number.isFinite(n)) return "$0.00";
+      return n.toLocaleString(undefined, { style:"currency", currency:"USD", maximumFractionDigits: 2 });
+    }
+    function num(n, d=2){
+      if(!Number.isFinite(n)) return "0.00";
+      return n.toLocaleString(undefined, { maximumFractionDigits:d, minimumFractionDigits:d });
+    }
+
+    // -----------------------------
+    // ROI
+    // -----------------------------
+    function initROI(){
+      const gainEl = document.getElementById('roi_gain');
+      const upEl   = document.getElementById('roi_upfront');
+      const moEl   = document.getElementById('roi_monthly');
+      const mEl    = document.getElementById('roi_months');
+
+      const btn = document.getElementById('roi_calc_btn');
+      const totalEl = document.getElementById('roi_total_cost');
+      const pctEl = document.getElementById('roi_percent');
+      const netEl = document.getElementById('roi_net');
+      const stepsEl = document.getElementById('roi_steps');
+
+      function calc(){
+        const G = Number(gainEl.value);
+        const U = Number(upEl.value);
+        const M = Number(moEl.value);
+        const months = Number(mEl.value);
+
+        const C = (Number.isFinite(U)?U:0) + ((Number.isFinite(M)?M:0) * (Number.isFinite(months)?months:0));
+        const net = (Number.isFinite(G)?G:0) - C;
+        const roi = (C > 0) ? (net / C) * 100 : 0;
+
+        totalEl.textContent = money(C);
+        pctEl.textContent = num(roi,2) + "%";
+        netEl.textContent = money(net);
+
+        stepsEl.textContent =
+`Inputs:
+G=${Number.isFinite(G)?G:"—"}, Upfront=${Number.isFinite(U)?U:"—"}, Monthly=${Number.isFinite(M)?M:"—"}, Months=${Number.isFinite(months)?months:"—"}
+
+Total Cost C = Upfront + (Monthly × Months)
+C = ${C}
+
+Net = G − C
+Net = ${net}
+
+ROI% = (Net ÷ C) × 100
+ROI% = ${roi}`;
+      }
+
+      btn.addEventListener('click', calc);
+    }
+
+    // -----------------------------
+    // Forecast
+    // -----------------------------
+    function initForecast(){
+      const openEl = document.getElementById('sf_open');
+      const nowEl  = document.getElementById('sf_now');
+      const closeEl= document.getElementById('sf_close');
+      const salesEl= document.getElementById('sf_sales');
+      const txEl   = document.getElementById('sf_tx');
+      const targetEl = document.getElementById('sf_target');
+
+      const btn = document.getElementById('sf_calc_btn');
+      const nowBtn = document.getElementById('sf_now_btn');
+
+      const elapsedEl = document.getElementById('sf_elapsed');
+      const remEl = document.getElementById('sf_remaining');
+      const avgEl = document.getElementById('sf_avg_ticket');
+      const tphEl = document.getElementById('sf_tph');
+
+      const projTxEl = document.getElementById('sf_proj_tx');
+      const projSalesEl = document.getElementById('sf_proj_sales');
+
+      const noteEl = document.getElementById('sf_note');
+      const stepsEl = document.getElementById('sf_steps');
+
+      function parseTime(t){
+        if(!t) return null;
+        const [hh, mm] = t.split(':').map(Number);
+        if(!Number.isFinite(hh) || !Number.isFinite(mm)) return null;
+        return hh*60 + mm;
+      }
+
+      function setNow(){
+        const d = new Date();
+        const hh = String(d.getHours()).padStart(2,'0');
+        const mm = String(d.getMinutes()).padStart(2,'0');
+        nowEl.value = `${hh}:${mm}`;
+      }
+
+      // set current time on open
+      if(!nowEl.value) setNow();
+
+      function calc(){
+        let o = parseTime(openEl.value);
+        let n = parseTime(nowEl.value);
+        let c = parseTime(closeEl.value);
+
+        const sales = Number(salesEl.value);
+        const tx = Number(txEl.value);
+        const target = Number(targetEl?.value);
+
+        if(o == null || n == null || c == null){
+          noteEl.textContent = "Add open, current, and close times.";
+          return;
+        }
+
+        // Handle overnight closes (close earlier than open)
+        if(c <= o) c += 24*60;
+        // If current time is before open, treat as next day (rare, but keeps math stable)
+        if(n < o) n += 24*60;
+
+        const totalMins = Math.max(1, c - o);
+        const elapsedMins = Math.max(0, Math.min(totalMins, n - o));
+        const remainingMins = Math.max(0, totalMins - elapsedMins);
+
+        const totalHours = totalMins / 60;
+        const elapsedHours = elapsedMins / 60;
+        const remainingHours = remainingMins / 60;
+
+        const safeTx = Number.isFinite(tx) ? tx : 0;
+        const safeSales = Number.isFinite(sales) ? sales : 0;
+
+        const avgTicket = (safeTx > 0) ? (safeSales / safeTx) : 0;
+        const txPerHour = (elapsedHours > 0) ? (safeTx / elapsedHours) : 0;
+        const salesPerHour = (elapsedHours > 0) ? (safeSales / elapsedHours) : 0;
+
+        const projTx = Math.round(txPerHour * totalHours);
+        const projSales = (avgTicket > 0 && projTx > 0)
+          ? (avgTicket * projTx)
+          : (salesPerHour * totalHours);
+
+        elapsedEl.textContent = num(elapsedHours,2);
+        remEl.textContent = num(remainingHours,2);
+        avgEl.textContent = money(avgTicket);
+        tphEl.textContent = num(txPerHour,2);
+
+        projTxEl.textContent = Number.isFinite(projTx) ? projTx.toLocaleString() : "0";
+        projSalesEl.textContent = money(projSales);
+
+        let guidance = "Looks good — keep pace.";
+        if(Number.isFinite(target) && target > 0){
+          const delta = projSales - target;
+          const sign = delta >= 0 ? "+" : "−";
+          const abs = Math.abs(delta);
+          guidance = delta >= 0
+            ? `On track to beat target by ${sign}${money(abs)}.`
+            : `At current pace you’re under target by ${sign}${money(abs)}.`;
+        }
+        if(elapsedHours <= 0.01) guidance = "Enter current sales/tx to forecast.";
+
+        noteEl.textContent = guidance;
+
+        stepsEl.textContent =
+`Time window:
+Open=${openEl.value} (${o}m), Now=${nowEl.value} (${n}m), Close=${closeEl.value} (${c}m)
+Total hours = ${(totalHours).toFixed(2)}
+Elapsed hours = ${(elapsedHours).toFixed(2)}
+Remaining hours = ${(remainingHours).toFixed(2)}
+
+Inputs:
+Sales = ${safeSales}
+Transactions = ${safeTx}
+Target = ${Number.isFinite(target) ? target : "—"}
+
+Derived:
+Avg ticket = Sales ÷ Tx = ${avgTicket}
+Tx/hour = Tx ÷ elapsedHours = ${txPerHour}
+Sales/hour = Sales ÷ elapsedHours = ${salesPerHour}
+
+Projections:
+Projected Tx = Tx/hour × totalHours = ${projTx}
+Projected Sales = (${avgTicket > 0 ? "AvgTicket × ProjTx" : "Sales/hour × totalHours"}) = ${projSales}`;
+      }
+
+      btn.addEventListener('click', calc);
+      nowBtn.addEventListener('click', ()=>{ setNow(); calc(); });
+    }
+
+    // -----------------------------
+    // PERT
+    // -----------------------------
+    function initPERT(){
+      const oEl = document.getElementById('tpe_o');
+      const mEl = document.getElementById('tpe_m');
+      const pEl = document.getElementById('tpe_p');
+      const unitEl = document.getElementById('tpe_unit');
+      const methodEl = document.getElementById('tpe_method');
+      const btn = document.getElementById('tpe_calc_btn');
+
+      const eEl = document.getElementById('tpe_e');
+      const sdEl = document.getElementById('tpe_sd');
+      const ciEl = document.getElementById('tpe_ci');
+      const sigEl = document.getElementById('tpe_signal');
+      const stepsEl = document.getElementById('tpe_steps');
+
+      function calc(){
+        const O = Number(oEl.value);
+        const M = Number(mEl.value);
+        const P = Number(pEl.value);
+        const unit = unitEl.value || "hours";
+        const method = methodEl.value || "pert";
+
+        if(!Number.isFinite(O) || !Number.isFinite(M) || !Number.isFinite(P)){
+          sigEl.textContent = "Enter O, M, and P.";
+          return;
+        }
+
+        let E = 0;
+        let SD = 0;
+
+        if(method === "pert"){
+          E = (O + 4*M + P) / 6;
+          SD = (P - O) / 6;
+        } else {
+          // Triangular distribution
+          E = (O + M + P) / 3;
+          const variance = (O*O + M*M + P*P - O*M - O*P - M*P) / 18;
+          SD = Math.sqrt(Math.max(0, variance));
+        }
+
+        const z = 1.645; // ~90%
+        const lo = Math.max(0, E - z*SD);
+        const hi = Math.max(0, E + z*SD);
+
+        eEl.textContent = num(E,2) + " " + unit;
+        sdEl.textContent = num(SD,2);
+        ciEl.textContent = `${num(lo,2)}–${num(hi,2)} ${unit}`;
+
+        const rel = (E > 0) ? ((hi - lo) / E) : 999;
+        let signal = "Good confidence.";
+        if(rel > 1.2) signal = "High uncertainty — break into smaller tasks.";
+        else if(rel > 0.6) signal = "Moderate uncertainty — validate assumptions.";
+        sigEl.textContent = signal;
+
+        stepsEl.textContent =
+`Inputs:
+O=${O}, M=${M}, P=${P}
+Units=${unit}
+Method=${method}
+
+Expected E:
+${method==="pert" ? "E = (O + 4M + P) / 6" : "E = (O + M + P) / 3"}
+E = ${E}
+
+Std. deviation:
+${method==="pert" ? "SD = (P − O) / 6" : "Var = (O² + M² + P² − OM − OP − MP) / 18; SD = √Var"}
+SD = ${SD}
+
+90% range (z≈1.645):
+[E − zSD, E + zSD] = [${lo}, ${hi}]`;
+      }
+
+      btn.addEventListener('click', calc);
+    }
+
+    // -----------------------------
+    // Marketing Decision Engine
+    // -----------------------------
+    function initMDE(){
+      const toneEl = document.getElementById('mde_tone');
+      const spendEl = document.getElementById('mde_spend');
+      const revEl = document.getElementById('mde_revenue');
+      const newEl = document.getElementById('mde_new_customers');
+      const marginEl = document.getElementById('mde_margin');
+      const aovEl = document.getElementById('mde_aov');
+      const visitsEl = document.getElementById('mde_visits');
+      const attrEl = document.getElementById('mde_attr');
+      const attrLabelEl = document.getElementById('mde_attr_label');
+
+      const calcBtn = document.getElementById('mde_calc_btn');
+      const seedBtn = document.getElementById('mde_seed_btn');
+
+      const infRevEl = document.getElementById('mde_inf_rev');
+      const infRevRngEl = document.getElementById('mde_inf_rev_rng');
+      const infGpEl = document.getElementById('mde_inf_gp');
+      const netEl = document.getElementById('mde_net');
+      const roiEl = document.getElementById('mde_roi');
+      const cpaEl = document.getElementById('mde_cpa');
+      const cpaMaxEl = document.getElementById('mde_cpa_max');
+
+      const decisionEl = document.getElementById('mde_decision');
+      const reasonEl = document.getElementById('mde_reason');
+      const bottleneckEl = document.getElementById('mde_bottleneck');
+      const actionEl = document.getElementById('mde_action');
+      const stepsEl = document.getElementById('mde_steps');
+
+      function updateAttr(){
+        attrLabelEl.textContent = (attrEl.value || 0) + "%";
+      }
+      attrEl.addEventListener('input', updateAttr);
+      updateAttr();
+
+      function seed(){
+        spendEl.value = 2500;
+        revEl.value = 42000;
+        newEl.value = 120;
+        marginEl.value = 55;
+        aovEl.value = 58;
+        visitsEl.value = 18000;
+        attrEl.value = 40;
+        updateAttr();
+      }
+
+      function toneWrap(tone, base){
+        if(tone === "cfo") return "CFO view: " + base;
+        if(tone === "founder") return "Founder view: " + base;
+        return base;
+      }
+
+      function calc(){
+        const tone = toneEl.value || "operator";
+        const spend = Number(spendEl.value);
+        const revenue = Number(revEl.value);
+        const newCust = Number(newEl.value);
+        const marginPct = Number(marginEl.value);
+        const aov = Number(aovEl.value);
+        const visits = Number(visitsEl.value);
+        const influence = Number(attrEl.value) / 100;
+
+        const sSpend = Number.isFinite(spend) ? spend : 0;
+        const sRevenue = Number.isFinite(revenue) ? revenue : 0;
+        const sNew = Number.isFinite(newCust) ? newCust : 0;
+        const sMargin = Number.isFinite(marginPct) ? marginPct/100 : 0;
+        const sAov = Number.isFinite(aov) ? aov : 0;
+
+        const infRev = sRevenue * influence;
+        const infRevLo = infRev * 0.85;
+        const infRevHi = infRev * 1.15;
+
+        const infGp = infRev * sMargin;
+        const net = infGp - sSpend;
+        const roi = (sSpend > 0) ? (net / sSpend) * 100 : 0;
+
+        const cpa = (sNew > 0) ? (sSpend / sNew) : 0;
+        const maxCpa = sAov * sMargin * influence;
+
+        infRevEl.textContent = money(infRev);
+        infRevRngEl.textContent = `Range: ${money(infRevLo)}–${money(infRevHi)}`;
+        infGpEl.textContent = money(infGp);
+        netEl.textContent = money(net);
+        roiEl.textContent = `ROI: ${num(roi,2)}%`;
+        cpaEl.textContent = money(cpa);
+        cpaMaxEl.textContent = money(maxCpa);
+
+        // Decision logic
+        let decision = "Enter values to evaluate";
+        let reason = "";
+        let bottleneck = "—";
+        let action = "—";
+
+        const cpaOk = (maxCpa > 0) ? (cpa <= maxCpa) : false;
+
+        if(sSpend <= 0 || sRevenue <= 0 || sNew <= 0 || sAov <= 0 || sMargin <= 0){
+          decision = "Add spend, revenue, new customers, margin, and AOV.";
+          reason = "Those inputs are needed to compute CPA and max CPA cleanly.";
+        } else {
+          if(net > 0 && cpaOk){
+            decision = toneWrap(tone, "Scale.");
+            reason = "You’re profitable on influenced gross profit, and CPA is within max CPA. Increase budget gradually and watch CPA.";
+          } else if(net <= 0 && cpaOk){
+            decision = toneWrap(tone, "Fix before scaling.");
+            reason = "CPA is acceptable, but influenced profit isn’t covering spend. Improve margin, AOV, or conversion before increasing budget.";
+          } else if(net > 0 && !cpaOk){
+            decision = toneWrap(tone, "Reallocate.");
+            reason = "You’re net-positive, but acquisition is expensive versus max CPA. Shift spend to higher-intent channels or tighten targeting.";
+          } else {
+            decision = toneWrap(tone, "Pause or reduce.");
+            reason = "CPA exceeds max CPA and net impact is negative. Reduce spend and address targeting/offer/creative.";
+          }
+        }
+
+        // Bottleneck logic
+        if(Number.isFinite(visits) && visits > 0 && sNew > 0){
+          const conv = sNew / visits; // new customers per visit (rough)
+          bottleneck = (conv < 0.004) ? "Conversion" : "Volume";
+          action = (conv < 0.004)
+            ? "Improve offer clarity, landing page speed, and on-site conversion steps."
+            : "Increase qualified traffic: partnerships, SEO, retargeting, and creatives.";
+        } else if(sNew > 0 && cpa > 0){
+          bottleneck = "Cost efficiency";
+          action = "Reduce CPA: tighten targeting, refresh creative, or cap low-performing placements.";
+        }
+
+        decisionEl.textContent = decision;
+        reasonEl.textContent = reason;
+        bottleneckEl.textContent = bottleneck;
+        actionEl.textContent = action;
+
+        stepsEl.textContent =
+`Inputs:
+Spend=${sSpend}
+Revenue=${sRevenue}
+New customers=${sNew}
+Margin%=${marginPct} (${sMargin})
+AOV=${sAov}
+Influence=${influence}
+Visits=${Number.isFinite(visits) ? visits : "—"}
+
+Calculations:
+Influenced Revenue = Revenue × Influence = ${infRev}
+Influenced GP = Influenced Revenue × Margin = ${infGp}
+Net = GP − Spend = ${net}
+ROI% = (Net ÷ Spend) × 100 = ${roi}
+
+CPA = Spend ÷ New customers = ${cpa}
+Max CPA = AOV × Margin × Influence = ${maxCpa}`;
+      }
+
+      calcBtn.addEventListener('click', calc);
+      seedBtn.addEventListener('click', ()=>{ seed(); calc(); });
+    }
+
+    // -----------------------------
+    // Tool modal open from cards
+    // -----------------------------
+    function openToolFromCard(card){
+      const tool = card.dataset.tool;
+      const title = card.dataset.title || "Tool";
+      const caption = card.dataset.caption || "";
+
+      toolTopTitle.textContent = title;
+      toolCaptionInline.textContent = caption;
+
+      if(tool === "forecast"){ injectTemplate("tpl-forecast"); initForecast(); }
+      if(tool === "roi"){ injectTemplate("tpl-roi"); initROI(); }
+      if(tool === "pert"){ injectTemplate("tpl-pert"); initPERT(); }
+      if(tool === "mde"){ injectTemplate("tpl-mde"); initMDE(); }
+
+      openToolModal();
+    }
+
+    document.querySelectorAll('.hotCard').forEach(card=>{
+      clicky(card, ()=> openToolFromCard(card));
+    });
+  </script>
+</body>
+</html>
 
